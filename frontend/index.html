@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>🛡️ Yardım Sinyali Algılama Sistemi</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>🛡️ Yardım Sinyali Algılama Sistemi</h1>
+
+    <div id="main-container">
+        <div id="video-box">
+            <video id="video-stream" autoplay muted playsinline></video>
+        </div>
+
+        <div id="status-panel">
+            <h2>Durum: <span id="status-text">Bekleniyor</span></h2>
+            
+            <h3>Algılanan Hareketler:</h3>
+            <ul id="detections"></ul>
+
+            <h3>FSM Adımı:</h3>
+            <div id="fsm-steps">
+                <span class="step" id="step-0">🖐️</span>
+                <span class="step" id="step-1">👍</span>
+                <span class="step" id="step-2">✊</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elementi sadece bir kez -->
+    <audio id="alarm-sound" src="/static/alert.mp3" preload="auto"></audio>
+    
+    <!-- Script sadece bir kez, body'nin sonunda -->
+    <script src="/static/script.js"></script>
+</body>
+</html>

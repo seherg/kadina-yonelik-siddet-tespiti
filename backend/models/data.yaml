@@ -1,0 +1,14 @@
+names:
+- closed_fingers
+- open_hand
+- thumb_in
+nc: 3
+roboflow:
+  license: CC BY 4.0
+  project: kadina_siddet
+  url: https://universe.roboflow.com/seher-pvagg/kadina_siddet/dataset/11
+  version: 11
+  workspace: seher-pvagg
+test: ../test/images
+train: ../train/images
+val: ../valid/images
