@@ -6,8 +6,8 @@ nc: 3
 roboflow:
   license: CC BY 4.0
   project: kadina_siddet
-  url: https://universe.roboflow.com/seher-pvagg/kadina_siddet/dataset/11
-  version: 11
+  url: https://universe.roboflow.com/seher-pvagg/kadina_siddet/dataset/13
+  version: 13
   workspace: seher-pvagg
 test: ../test/images
 train: ../train/images
