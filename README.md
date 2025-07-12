@@ -1,4 +1,4 @@
-# 🛡️ Real-Time Emergency Hand Gesture Detection System
+# 🛡️ Gerçek Zamanlı Şiddet Tespiti
 
 Bu proje, el hareketleriyle yardım sinyali veren bireylerin acil durumlarını **gerçek zamanlı olarak algılayan** bir sistemdir. Sistem; bilgisayar kamerası, özel eğitilmiş YOLO modeli ve bir FSM (Sonlu Durum Makinesi) kullanarak üç aşamalı bir el işareti sırasını izler:
 
