@@ -71,10 +71,6 @@ violence-detection/
 
 │
 
-├── videos/                      # Gelecekte kayıtlı videolar için kullanılabilir
-
-│
-
 └── README.md                    # Proje açıklaması
 
 
