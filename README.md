@@ -3,7 +3,7 @@
 Bu proje, el işaretleri aracılığıyla yardım sinyali veren bireylerin acil durumlarını **gerçek zamanlı** olarak algılayan bir sistem sunar. Sistem; bilgisayar kamerası, özel eğitilmiş YOLO modeli, bir FSM (Sonlu Durum Makinesi), WebSocket tabanlı iletişim ve sesli/görsel uyarılarla çalışır. Kullanıcı aşağıdaki üç aşamalı el işareti dizisini gerçekleştirdiğinde:
 
 **open\_hand → thumb\_in → closed\_fingers**
-<img width="1881" height="846" alt="Ekran görüntüsü 2025-08-03 161849" src="https://github.com/user-attachments/assets/093643e5-c9a8-4429-968a-f38a753d2687" />
+<img width="1884" height="844" alt="image" src="https://github.com/user-attachments/assets/f7568d5e-bf1e-4f18-9066-7df5948d9ab5" />
 
 
 * Sistem önce alarm sesi çalar ve ekranda görsel bir uyarı gösterir.
