@@ -1,19 +1,8 @@
+// static/script.js
+
 let socket;
-let currentStep = -1;
-
-// 📸 Video akışını başlat - sadece mevcut elementi al
 const video = document.getElementById("video-stream");
-
-navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-    .then(stream => {
-        video.srcObject = stream;
-        console.log("✅ Kamera başarıyla açıldı");
-    })
-    .catch(err => {
-        console.error("❌ Kamera erişim hatası:", err);
-        alert("Kamera erişimi reddedildi. Lütfen tarayıcı ayarlarından kameraya izin verin.");
-    });
-
+const startBtn = document.getElementById("start-btn");
 const statusText = document.getElementById("status-text");
 const fsmSteps = [
     document.getElementById("step-0"),
@@ -23,159 +12,197 @@ const fsmSteps = [
 const detectionsList = document.getElementById("detections");
 const alarmSound = document.getElementById("alarm-sound");
 
-// Ses dosyası yükleme kontrolü
+// Recording vars
+let mediaRecorder;
+let recordedChunks = [];
+
+// Audio load / error logging
 alarmSound.addEventListener('loadeddata', () => {
-    console.log("✅ Ses dosyası başarıyla yüklendi");
+    console.log("✅ Alarm sesi başarıyla yüklendi");
 });
-
-alarmSound.addEventListener('error', (e) => {
-    console.error("❌ Ses dosyası yükleme hatası:", e);
-    console.log("🔍 Ses dosyası yolu:", alarmSound.src);
+alarmSound.addEventListener('error', e => {
+    console.error("❌ Alarm sesi yüklenemedi:", e);
 });
-
-// Ses dosyasını test et
 alarmSound.load();
 
-function updateFSM(step) {
-    for (let i = 0; i < fsmSteps.length; i++) {
-        fsmSteps[i].classList.remove("active", "done");
-        if (i < step) {
-            fsmSteps[i].classList.add("done");
-        } else if (i === step) {
-            fsmSteps[i].classList.add("active");
-        }
+// Start button: unlock audio & connect WS
+startBtn.addEventListener('click', () => {
+    // tiny play-pause to unlock autoplay
+    alarmSound.play()
+        .then(() => alarmSound.pause())
+        .catch(() => {/* ignore */});
+
+    connectWebSocket();
+    startBtn.disabled = true;
+    startBtn.textContent = "Bağlanıyor…";
+});
+
+// ——— Recording setup ———
+function setupRecorder() {
+    const stream = video.srcObject;
+    if (!stream) {
+        console.warn("📹 Kayıt için video stream hazır değil");
+        return;
     }
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+
+    mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) {
+            recordedChunks.push(e.data);
+        }
+    };
+    mediaRecorder.onstop = saveRecording;
 }
 
+function startRecording(durationMs = 10000) {
+    setupRecorder();
+    if (!mediaRecorder) return;
+
+    mediaRecorder.start();
+    console.log(`📹 Kayıt başladı (${durationMs/1000}s)`);
+
+    setTimeout(() => {
+        if (mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+            console.log("📹 Kayıt durduruluyor");
+        }
+    }, durationMs);
+}
+
+function saveRecording() {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `alarm-recording-${Date.now()}.webm`;
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    }, 100);
+
+    console.log("📹 Kayıt indiriliyor");
+}
+// —————————
+
+// Play alarm sound + start recording
+function playAlarm() {
+    console.log("🚨 playAlarm() çağrıldı");
+    statusText.textContent = "🚨 ALARM!";
+    statusText.className = "status-alarm";
+
+    alarmSound.currentTime = 0;
+    alarmSound.play()
+        .then(() => console.log("🔊 Alarm sesi çaldı"))
+        .catch(err => console.error("❌ Ses çalınamadı:", err));
+
+    // Automatically record 10s on alarm
+    startRecording(10000);
+}
+
+// Update FSM visualization
+function updateFSM(step) {
+    fsmSteps.forEach((el, i) => {
+        el.classList.toggle("done", i < step);
+        el.classList.toggle("active", i === step);
+    });
+}
+
+// Update status text for idle / tracking
 function updateStatus(mode) {
-    statusText.classList.remove("status-idle", "status-tracking", "status-alarm");
+    console.log("── updateStatus:", mode);
+    statusText.className = "";
     if (mode === "idle") {
         statusText.textContent = "Bekleniyor";
         statusText.classList.add("status-idle");
     } else if (mode === "tracking") {
         statusText.textContent = "Takip Ediliyor";
         statusText.classList.add("status-tracking");
-    } else if (mode === "alarm") {
-        statusText.textContent = "🚨 ALARM!";
-        statusText.classList.add("status-alarm");
-        console.log("🚨 ALARM TETİKLENDİ!");
-        
-        // Ses dosyası kontrolü ve çalma
-        if (alarmSound) {
-            console.log("🔊 Ses dosyası bulundu, çalıyor...");
-            alarmSound.currentTime = 0; // Baştan başlat
-            alarmSound.play().then(() => {
-                console.log("✅ Ses başarıyla çalıyor");
-            }).catch(err => {
-                console.error("❌ Ses çalınamadı:", err);
-                // Alternatif alarm - tarayıcı sesi
-                console.log("🔔 Alternatif alarm kullanılıyor");
-                window.alert("🚨 YARDIM SİNYALİ ALGILANDI!");
-            });
-        } else {
-            console.error("❌ Ses dosyası bulunamadı!");
-            window.alert("🚨 YARDIM SİNYALİ ALGILANDI!");
-        }
     }
 }
 
-function appendDetection(detection) {
+// Append a detection to the list
+function appendDetection(d) {
     const li = document.createElement("li");
-    li.textContent = `🖐️ ${detection.class} (${Math.round(detection.confidence * 100)}%)`;
+    li.textContent = `🖐️ ${d.class} (${Math.round(d.confidence * 100)}%)`;
     detectionsList.prepend(li);
     if (detectionsList.children.length > 10) {
         detectionsList.removeChild(detectionsList.lastChild);
     }
 }
 
+// Capture frame & send to server
 function captureFrameAndSend() {
-    // Video hazır değilse bekle
-    if (!video.videoWidth || !video.videoHeight || video.readyState < 2) {
-        return;
-    }
-
+    if (video.readyState < 2) return;
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataURL = canvas.toDataURL("image/jpeg", 0.8);
-    const base64Image = dataURL.split(",")[1];
+    canvas.getContext("2d").drawImage(video, 0, 0);
 
-    if (socket && socket.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ image: base64Image }));
+    const b64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+    if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ image: b64 }));
     }
 }
 
+// WebSocket connection & messaging
 function connectWebSocket() {
     socket = new WebSocket("ws://localhost:8000/ws");
 
     socket.onopen = () => {
-        console.log("🔌 WebSocket bağlantısı kuruldu.");
-        updateStatus("idle");
+        console.log("🔌 WebSocket açık");
+        startBtn.textContent = "Bağlandı ✅";
 
-        // Video yüklendikten sonra görüntüleri göndermeye başla
-        const startSending = () => {
-            if (video.readyState >= 2) {
-                setInterval(captureFrameAndSend, 300); // 0.5 saniyede bir kare gönder
-            } else {
-                video.addEventListener('loadeddata', () => {
-                    setInterval(captureFrameAndSend, 300);
-                }, { once: true });
-            }
-        };
-        startSending();
+        // Start video & frame sending
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                setInterval(captureFrameAndSend, 300);
+            })
+            .catch(err => {
+                console.error("❌ Kamera erişim hatası:", err);
+                alert("Kamera erişimi reddedildi.");
+            });
     };
 
-    socket.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        console.log("📨 WebSocket mesajı alındı:", msg);
-
-        if (msg.type === "detection") {
-            const detections = msg.data.detections;
-            const step = msg.data.sequence_step;
-            const status = msg.data.status;
-
-            console.log(`📊 Adım: ${step}, Durum: ${status}, Tespit sayısı: ${detections.length}`);
-
-            if (detections.length > 0) {
-                appendDetection(detections[0]);
-            }
-
-            updateFSM(step);
-            updateStatus(status);
-
-            // 🚨 ÖNEMLİ: Adım 2'ye ulaşınca zorla alarm tetikle (geçici test)
-            if (step === 2 && status === "tracking") {
-                console.log("🚨 ADIM 2 TESPİT EDİLDİ - ALARM TETİKLENİYOR!");
-                setTimeout(() => {
-                    updateStatus("alarm");
-                }, 1000); // 1 saniye bekle
-            }
-
-            // Özel alarm kontrolü
-            if (status === "alarm") {
-                console.log("🚨 ALARM DURUMU TETİKLENDİ!");
-                updateStatus("alarm");
-            }
-        }
+    socket.onmessage = ({ data }) => {
+        const msg = JSON.parse(data);
+        console.log("📨 mesaj:", msg);
 
         if (msg.type === "alarm") {
-            console.log("🚨 ALARM MESAJI ALINDI!");
-            updateStatus("alarm");
+            console.log("🚨 SUNUCUDAN ALARM");
+            playAlarm();
+            return;
+        }
+        if (msg.type === "detection") {
+            const { detections, sequence_step: step, status } = msg.data;
+            console.log("📊", { step, status, detections });
+
+            updateFSM(step);
+            if (detections.length) {
+                const det = detections[0];
+                appendDetection(det);
+                // Trigger on closed_finger(s)
+                if (det.class === "closed_finger" || det.class === "closed_fingers") {
+                    console.log(`🚨 ${det.class} tespit edildi - Alarm tetikleniyor!`);
+                    playAlarm();
+                    return;
+                }
+            }
+            updateStatus(status);
         }
     };
 
     socket.onclose = () => {
-        console.warn("🔌 WebSocket bağlantısı kapandı. Yeniden bağlanılıyor...");
+        console.warn("🔌 WS kapandı, yeniden bağlanılıyor…");
         updateStatus("idle");
         setTimeout(connectWebSocket, 2000);
     };
 
-    socket.onerror = (err) => {
-        console.error("WebSocket hatası:", err);
-    };
+    socket.onerror = err => console.error("⚠️ WS hata:", err);
 }
-
-// WebSocket bağlantısını başlat
-connectWebSocket();

@@ -1,21 +1,24 @@
+/* frontend/style.css */
+/* 1) Genel ayarlar */
 body {
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', sans-serif;
-    background-color: #1a1a2e;
+    background: #1a1a2e;
     color: #f5f5f5;
 }
 
 h1 {
     text-align: center;
     padding: 20px 0;
-    background-color: #0f3460;
+    background: #0f3460;
     margin: 0;
     font-size: 26px;
     color: #e0e0e0;
-    border-bottom: 3px solid #00adb5;
+    border-bottom: 3px solid #BBDEFF;
 }
 
+/* 2) Main container ve video kutusu */
 #main-container {
     display: flex;
     justify-content: center;
@@ -27,98 +30,138 @@ h1 {
 #video-box {
     flex: 1;
     max-width: 640px;
-    background-color: #000;
-    border: 4px solid #00adb5;
+    background: #000;
+    border: 4px solid #AAB9E8;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 0 15px #00adb5aa;
+    box-shadow: 0 0 15px rgba(170, 185, 232, 0.6);
 }
 
-/* Video elementi için düzeltme */
 #video-stream {
     width: 100%;
     height: auto;
     display: block;
 }
 
+/* 3) Durum paneli */
 #status-panel {
     flex: 0.8;
-    background-color: #16213e;
+    display: flex;
+    flex-direction: column;
+    background: #16213e;
     padding: 20px;
     border-radius: 12px;
-    border: 2px solid #00adb5;
-    box-shadow: 0 0 10px #00adb580;
+    border: 2px solid #C8C7FF;
+    box-shadow: 0 0 10px rgba(200, 199, 255, 0.5);
+    height: 600px;
+    box-sizing: border-box;
 }
 
+/* Başlık içindeki durum */
 #status-text {
     font-size: 20px;
     font-weight: bold;
     padding: 5px 10px;
     border-radius: 5px;
-    background-color: #393e46;
+    background: #BCAAE8;
+    color: #1a1a2e;
+    display: inline-block;
+    margin-bottom: 15px;
 }
 
+/* Status sınıfları */
 .status-idle {
-    background-color: #393e46;
-    color: #fff;
+    background: #E2BBFF;
+    color: #1a1a2e;
 }
 .status-tracking {
-    background-color: #ffcc00;
-    color: #000;
+    background: #AAB9E8;
+    color: #1a1a2e;
 }
 .status-alarm {
-    background-color: #ff2e63;
-    color: #fff;
+    background: #BBDEFF;
+    color: #1a1a2e;
     animation: pulse 1s infinite;
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 5px #ff2e63; }
-    50% { box-shadow: 0 0 15px #ff2e63; }
-    100% { box-shadow: 0 0 5px #ff2e63; }
+    0% { box-shadow: 0 0 5px #BBDEFF; }
+    50% { box-shadow: 0 0 15px #BBDEFF; }
+    100% { box-shadow: 0 0 5px #BBDEFF; }
 }
 
+/* 4) Algılanan hareketler listesi */
 #detections {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
-    margin-top: 10px;
+    margin: 0;
+    flex: 1;             /* Esneyip emoji bar’ın üstünde kalacak */
+    overflow-y: auto;    /* Çok uzun olursa scroll */
 }
 
 #detections li {
-    background-color: #222831;
+    background: #2b2f44;
     margin-bottom: 6px;
-    padding: 6px 10px;
+    padding: 8px 12px;
     border-radius: 6px;
     font-size: 16px;
-    border-left: 5px solid #00adb5;
+    border-left: 5px solid #C8C7FF;
 }
 
+/* 5) FSM adımları (emoji bar) */
 #fsm-steps {
-    margin-top: 15px;
+    margin-top: auto;    /* En alta yapışır */
     display: flex;
-    gap: 10px;
-    justify-content: start;
-    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 10px;
+    border-top: 1px solid #BCAAE8;
 }
 
 .step {
-    font-size: 28px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    background-color: #393e46;
-    opacity: 0.4;
+    font-size: 32px;
+    padding: 12px;
+    border-radius: 50%;
+    background: #393e46;
+    opacity: 0.5;
     transition: all 0.3s ease;
 }
 
 .step.active {
-    background-color: #00adb5;
-    color: #fff;
+    background: #BBDEFF;
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1.2);
 }
 
 .step.done {
-    background-color: #4ecca3;
-    color: #000;
+    background: #C8C7FF;
     opacity: 1;
+}
+
+/* 6) Başlat butonu */
+#start-btn {
+    display: inline-block;
+    margin: 20px auto;
+    padding: 12px 24px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #1a1a2e;
+    background: linear-gradient(135deg, #E2BBFF, #BBDEFF);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,255,255,0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 18px rgba(255,255,255,0.3);
+}
+
+#start-btn:disabled {
+    background: #393e46;
+    color: #888;
+    cursor: default;
+    box-shadow: none;
 }
