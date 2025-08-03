@@ -1,128 +1,82 @@
 # 🛡️ Gerçek Zamanlı Şiddet Tespiti
 
-Bu proje, el hareketleriyle yardım sinyali veren bireylerin acil durumlarını **gerçek zamanlı olarak algılayan** bir sistemdir. Sistem; bilgisayar kamerası, özel eğitilmiş YOLO modeli ve bir FSM (Sonlu Durum Makinesi) kullanarak üç aşamalı bir el işareti sırasını izler:
+Bu proje, el işaretleri aracılığıyla yardım sinyali veren bireylerin acil durumlarını **gerçek zamanlı** olarak algılayan bir sistem sunar. Sistem; bilgisayar kamerası, özel eğitilmiş YOLO modeli, bir FSM (Sonlu Durum Makinesi), WebSocket tabanlı iletişim ve sesli/görsel uyarılarla çalışır. Kullanıcı aşağıdaki üç aşamalı el işareti dizisini gerçekleştirdiğinde:
 
-**open_hand → thumb_in → closed_fingers**
+**open\_hand → thumb\_in → closed\_fingers**
+<img width="1881" height="846" alt="Ekran görüntüsü 2025-08-03 161849" src="https://github.com/user-attachments/assets/093643e5-c9a8-4429-968a-f38a753d2687" />
 
-![image](https://github.com/user-attachments/assets/2f387bd5-ed6a-4876-b270-62930f3218d0)
 
-![image](https://github.com/user-attachments/assets/35b08828-84f9-44f9-86b7-fc8f1b868d60)
-
+* Sistem önce alarm sesi çalar ve ekranda görsel bir uyarı gösterir.
+* Ardından otomatik olarak 10 saniyelik bir WebM video kaydı başlatır ve kaydın tamamlanmasının ardından indirme linki sağlar.
+* Tüm olayı `SQLite` veritabanına kaydeder.
 
 ## 🚀 Özellikler
 
-- 📹 Gerçek zamanlı kamera görüntüsü işleme
-- 🧠 FSM ile sıralı hareket takibi
-- 🔊 Alarm sesi ve görsel uyarı
-- 💬 WebSocket ile anlık veri iletişimi
-- 📦 SQLite veritabanına olay loglama
-- 🎯 Kullanıcı dostu arayüz (HTML/CSS/JS)
+* 📹 Gerçek zamanlı kamera görüntüsü işleme
+* 🧠 FSM ile sıralı hareket takibi
+* 🔊 Alarm sesi ve görsel uyarı
+* 🎬 Otomatik 10 saniyelik video kaydı ve indirme linki
+* 💬 WebSocket ile anlık veri aktarımı
+* 📦 `SQLite` veritabanına tespit loglama
+* 🖱️ Başlat butonu sayesinde tarayıcı izinlerinin otomatik yönetimi
+* 🎨 Responsive ve kullanıcı dostu arayüz (HTML5, CSS3, JavaScript)
 
 ---
 
-## 📁 Proje Yapısı
-violence-detection/
-
-├── backend/
-
-│   ├── alarm.py                 # Alarm sesi oynatımı
-
-│   ├── database.py              # SQLite kayıt yönetimi
-
-│   ├── detector.py              # YOLO + FSM ile hareket tespiti
-
-│   ├── fsm.py                   # Yardım sinyali FSM sınıfı
-
-│   ├── main.py                  # FastAPI uygulaması
-
-│   ├── model_debug.py           # Model çıktısı test aracı (isteğe bağlı)
-
-│   ├── requirements.txt         # Python bağımlılıkları
-
-│   ├── websocket_handler.py     # WebSocket bağlantı yöneticisi
-
-│   ├── __pycache__/             # Python önbellek klasörü
-
-│   ├── models/                  # YOLO model dosyaları (.pt)
-
-│
-
-├── database/
-
-│   └── alarms.db                # Yardım sinyali kayıtlarının tutulduğu SQLite veritabanı
-
-│
-
-├── frontend/
-
-│   ├── alert.mp3                # Alarm sesi
-
-│   ├── index.html               # Web arayüzü
-
-│   ├── script.js                # Kamera ve FSM kontrolü + WebSocket
-
-│   └── style.css                # Arayüz tasarımı
-
-│
-
-├── tests/
-
-│   ├── test_detector.py         # YOLO tespitleri için test dosyası
-
-│
-
-└── README.md                    # Proje açıklaması
-
-
 ## ⚙️ Kurulum
 
-### 1. Ortamı Hazırla
+1. **Ortamı Hazırla**
 
-python -m venv venv
-venv\Scripts\activate
-pip install -r backend/requirements.txt
+   ```bash
+   python -m venv venv
+   # Windows:
+   venv\Scripts\activate
+   # macOS/Linux:
+   source venv/bin/activate
+   pip install -r backend/requirements.txt
+   ```
+2. **Sunucuyu Başlat**
 
-### 2. Sunucuyu başlat
-python -m uvicorn backend.main:app --reload
+   ```bash
+   uvicorn backend.main:app --reload
+   ```
+3. **Tarayıcıda Uygulamayı Aç**
 
-### 3. Tarayıcıda Aç
-http://127.0.0.1:8000/
+   ```
+   http://127.0.0.1:8000/
+   ```
 
-## 🧪 Test İçin
-Kamera erişimine izin verin.
+## 🧪 Nasıl Test Edilir?
 
-El işaretini şu sırayla yapın:
+1. Sayfada **Uygulamayı Başlat** butonuna tıklayarak kamera, ses ve kayıt izinlerini verin.
+2. El işaretlerini şu sırayla yapın:
 
-🖐️ open_hand
+   1. 🖐️ **open\_hand**
+   2. 👍 **thumb\_in**
+   3. ✊ **closed\_fingers**
+3. Başarılı tespitte:
 
-👍 thumb_in
-
-✊ closed_fingers
-
-Başarılı tespitte sistem alarm verir 🔊
+   * Sistem alarm sesi çalar ve görsel uyarı gösterir.
+   * 10 saniyelik video kaydı otomatik başlatılır, ardından indirme linki ekranda belirir.
 
 ## 🗃️ Kayıtlar
-Tespit edilen yardım sinyalleri database/alarms.db içinde şu bilgilerle saklanır:
 
-timestamp (tarih/saat)
+Tespit edilen olaylar `database/alarms.db` dosyasında şu bilgilerle saklanır:
 
-gesture sequence
-
-confidence
-
+* **timestamp** (tarih ve saat)
+* **sequence** (hareket dizisi)
+* **confidence** (güven skoru)
 
 ## 🛠️ Kullanılan Teknolojiler
-Python 3.13
 
-FastAPI & Uvicorn
+* Python 3.13
+* FastAPI & Uvicorn
+* YOLOv8 (Ultralytics)
+* WebSocket API
+* MediaRecorder API (WebM video kaydı)
+* HTML5, CSS3, JavaScript
+* SQLite3
 
-YOLOv8 (Ultralytics)
+## 👩‍💻 Geliştirici
 
-WebSocket
-
-HTML5 + CSS3 + JS
-
-SQLite3
-
-# 👩‍💻 Geliştirici
 Seher Gumusay
